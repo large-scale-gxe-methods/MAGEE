@@ -1,5 +1,5 @@
 /*  MAGEE : An R Package for Mixed Model Association Test for GEne-Environment Interaction
- *  Copyright (C) 2020--2025  Xinyu Wang, Han Chen, Duy T. Pham
+ *  Copyright (C) 2020--2026  Xinyu Wang, Han Chen, Duy T. Pham
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,7 +31,6 @@
 #include "zstd/lib/zstd.h"
 #include "libdeflate/libdeflate.h"
 using namespace std;
-using namespace arma;
 using namespace Rcpp;
 
 
@@ -109,9 +108,9 @@ extern "C"
 	n = J.n_rows;
       }
  
-      vec g(n);
-      uvec gmiss(n), snp_skip = zeros<uvec>(npb);
-      mat G(n_obs, npb);
+      arma::vec g(n);
+      arma::uvec gmiss(n), snp_skip = arma::zeros<arma::uvec>(npb);
+      arma::mat G(n_obs, npb);
       string* tmpout = new string[npb];
       vector <string> biminfo;
       double gmean, mac, gsqmean, geno, gmax, gmin, rsq;
@@ -132,14 +131,14 @@ extern "C"
       uint begin = Rcpp::as<uint>(begin_in);
       uint end   = Rcpp::as<uint>(end_in);
       uint Nbgen = Rcpp::as<uint>(nbgen_in);
-      vec g2(Nbgen);
-      g2.fill(datum::nan);
+      arma::vec g2(Nbgen);
+      g2.fill(arma::datum::nan);
       long long unsigned int byte = Rcpp::as<long long unsigned int>(pos_in);
       FILE* fp = fopen(bgenfile.c_str(), "rb");
       fseek(fp, byte, SEEK_SET);      
       int ret;
-      mat strata_AF(end,strataList_size);
-      mat strata_N(end,strataList_size);
+      arma::mat strata_AF(end,strataList_size);
+      arma::mat strata_N(end,strataList_size);
 
       for (uint m = begin; m < end; m++) {
         stringstream writeout;        
@@ -162,7 +161,7 @@ extern "C"
         
         uint physpos; 
         ret = fread(&physpos, 4, 1, fp);
-	      string physpos_tmp = to_string(physpos);
+	string physpos_tmp = to_string(physpos);
 	      
         ushort LKnum; 
         ret = fread(&LKnum, 2, 1, fp);
@@ -235,7 +234,7 @@ extern "C"
           Rcout << "Error reading bgen file: Bits to store probabilities must be 8, 16, 24, or 32. \n"; return R_NilValue;
       	}
       	
-	      const uintptr_t numer_mask = (1U << B) - 1;
+	const uintptr_t numer_mask = (1U << B) - 1;
         const uintptr_t probs_offset = B / 8;
         
         gmean=0.0;
@@ -336,13 +335,13 @@ extern "C"
                 writeout << snpID << "\t" << rsID << "\t" << chrStr << "\t" << physpos_tmp << "\t" << allele1 << "\t" << allele0 << "\t" << (n-nmiss) << "\t" << gmean/2.0 << "\t" << mac << "\t" << rsq << "\t";
                 std::vector<double> strata_range(strataList_size);
                 for (int strata_idx = 0; strata_idx < strataList_size; strata_idx++) {
-                      uvec strata_tmp = as<arma::uvec>(strata_list[strata_idx]);
-                      uvec strata_gmiss = gmiss.elem(strata_tmp-1);
-                      vec strata_g = g.elem(strata_tmp-1);
-                      strata_AF(m,strata_idx) = mean(strata_g.elem(find(strata_gmiss == 0))) / 2.0;
-                      vec tmp;
-                      tmp= strata_g.elem(find(strata_gmiss == 0));
-                      strata_N(m,strata_idx) =tmp.n_elem;            
+			arma::uvec strata_tmp = as<arma::uvec>(strata_list[strata_idx]);
+			arma::uvec strata_gmiss = gmiss.elem(strata_tmp-1);
+			arma::vec strata_g = g.elem(strata_tmp-1);
+                      	strata_AF(m,strata_idx) = mean(strata_g.elem(arma::find(strata_gmiss == 0))) / 2.0;
+			arma::vec tmp;
+                      	tmp= strata_g.elem(arma::find(strata_gmiss == 0));
+                      	strata_N(m,strata_idx) =tmp.n_elem;            
                 }
                 for (int strata_idx = 0; strata_idx < strataList_size; strata_idx++) {
                       writeout << strata_N(m,strata_idx) << "\t";
@@ -383,123 +382,123 @@ extern "C"
            snp_skip = snp_skip.rows(0,npbidx-1);
          }
 
-         uvec snp_idx = find(snp_skip == 0);
+	 arma::uvec snp_idx = arma::find(snp_skip == 0);
          G = G.cols(snp_idx);
          int ng = G.n_cols; 
 
-         mat IV_U;
-         mat IV_U1;
-         mat IV_V_i;
-         mat IV_V_i1;
-         mat IV_E_i;
-         mat IV_GE_i;
-         mat STAT_JOINT_tmp;
-         vec BETA_MAIN;
-         vec STAT_INT;
-         vec STAT_JOINT;
-         vec SE_MAIN;
-         mat BETA_INT;
-         mat BETA_INT1;
-         vec PVAL_MAIN(ng);
+	 arma::mat IV_U;
+	 arma::mat IV_U1;
+	 arma::mat IV_V_i;
+	 arma::mat IV_V_i1;
+	 arma::mat IV_E_i;
+	 arma::mat IV_GE_i;
+	 arma::mat STAT_JOINT_tmp;
+	 arma::vec BETA_MAIN;
+	 arma::vec STAT_INT;
+	 arma::vec STAT_JOINT;
+	 arma::vec SE_MAIN;
+	 arma::mat BETA_INT;
+	 arma::mat BETA_INT1;
+	 arma::vec PVAL_MAIN(ng);
          PVAL_MAIN.fill(NA_REAL);
-         vec PVAL_INT(ng);
+	 arma::vec PVAL_INT(ng);
          PVAL_INT.fill(NA_REAL);
-         vec PVAL_JOINT(ng);
+	 arma::vec PVAL_JOINT(ng);
          PVAL_JOINT.fill(NA_REAL);
          size_t ngei1=ng*(ei+1);
   
          if (G.n_cols != 0) {           
-           mat K;
+	   arma::mat K;
            for (int ei_idx = 0; ei_idx < ei+qi; ei_idx++) {
-              mat tmpK = G.each_col() % E.col(ei_idx);
-              K = join_horiz(K, tmpK);
+		arma::mat tmpK = G.each_col() % E.col(ei_idx);
+              	K = arma::join_horiz(K, tmpK);
            }
         
-           mat K1;
-           mat O(E.n_rows,1.00000,fill::ones);
-           mat E1;
-           E1=join_horiz(O,E);
+	   arma::mat K1;
+	   arma::mat O(E.n_rows,1.00000,arma::fill::ones);
+	   arma::mat E1;
+           E1=arma::join_horiz(O,E);
            for (int ei_idx = 0; ei_idx < ei+qi+1; ei_idx++) {
-              mat tmpK1 = G.each_col() % E1.col(ei_idx);
-              K1 = join_horiz(K1, tmpK1);
+	      arma::mat tmpK1 = G.each_col() % E1.col(ei_idx);
+              K1 = arma::join_horiz(K1, tmpK1);
            }
            
-            vec U = G.t() * res;                           
-            sp_mat Gsp(G);
-            sp_mat PG;
-            if (!isNullP) {
+	   arma::vec U = G.t() * res;                           
+	   arma::sp_mat Gsp(G);
+	   arma::sp_mat PG;
+           if (!isNullP) {
               PG = P.t() * G;
-            } else {
-              sp_mat GSigma_iX =  Gsp.t() * Sigma_iX;
+           } else {
+	      arma::sp_mat GSigma_iX =  Gsp.t() * Sigma_iX;
               PG = (Sigma_i.t() * Gsp) - (Sigma_iX * (GSigma_iX * cov.t()).t());
-            }
+           }
 
-            mat GPG = (G.t() * PG)  % kron(ones(1, 1), mat(ng, ng, fill::eye));         
-            mat GPG_i;
-            bool is_non_singular = inv(GPG_i, GPG);
-            if (!is_non_singular) {
-              GPG_i = pinv(GPG);
-            }
+	   arma::mat GPG = (G.t() * PG)  % arma::kron(arma::ones(1, 1), arma::mat(ng, ng, arma::fill::eye));         
+	   arma::mat GPG_i;
+           bool is_non_singular = arma::inv(GPG_i, GPG);
+           if (!is_non_singular) {
+             GPG_i = arma::pinv(GPG);
+           }
 
-            mat V_i;
-            V_i = diagvec(GPG_i);           
-            vec V_MAIN_adj = diagvec(GPG_i);
-            V_MAIN_adj = V_MAIN_adj.rows(0, ng-1);            
-            vec BETA_MAIN_adj = GPG_i.t() * U; 
-            BETA_MAIN_adj= BETA_MAIN_adj.rows(0, ng-1);
+	   arma::mat V_i;
+           V_i = arma::diagvec(GPG_i);           
+	   arma::vec V_MAIN_adj = arma::diagvec(GPG_i);
+           V_MAIN_adj = V_MAIN_adj.rows(0, ng-1);            
+	   arma::vec BETA_MAIN_adj = GPG_i.t() * U; 
+           BETA_MAIN_adj= BETA_MAIN_adj.rows(0, ng-1);
 
-            vec STAT_MAIN_adj(ng);
-            STAT_MAIN_adj.fill(NA_REAL);
-            for (size_t s = 0; s < V_MAIN_adj.size(); s++) {
-              if (V_MAIN_adj[s] > 0) {
-                STAT_MAIN_adj[s] = (BETA_MAIN_adj[s] * BETA_MAIN_adj[s]) / V_MAIN_adj[s];
-              }
-            } 
+	   arma::vec STAT_MAIN_adj(ng);
+           STAT_MAIN_adj.fill(NA_REAL);
+           for (size_t s = 0; s < V_MAIN_adj.size(); s++) {
+             if (V_MAIN_adj[s] > 0) {
+               STAT_MAIN_adj[s] = (BETA_MAIN_adj[s] * BETA_MAIN_adj[s]) / V_MAIN_adj[s];
+             }
+           } 
             
-            BETA_MAIN = V_i % U.rows(0,ng-1);
-            SE_MAIN = sqrt(V_i);
-            vec STAT_MAIN = BETA_MAIN % U.rows(0,ng-1);
-            for (size_t s = 0; s < STAT_MAIN.size(); s++) {
-              if (STAT_MAIN[s] > 0) {
-                PVAL_MAIN[s] = Rf_pchisq(STAT_MAIN[s], 1, 0, 0);
-              }
-            }
+           BETA_MAIN = V_i % U.rows(0,ng-1);
+           SE_MAIN = sqrt(V_i);
+	   arma::vec STAT_MAIN = BETA_MAIN % U.rows(0,ng-1);
+           for (size_t s = 0; s < STAT_MAIN.size(); s++) {
+             if (STAT_MAIN[s] > 0) {
+               PVAL_MAIN[s] = Rf_pchisq(STAT_MAIN[s], 1, 0, 0);
+             }
+           }
 
-            mat KPK1;
-            if (!isNullP) {
-              KPK1 = K1.t() * (P.t() * K1);
-            } else {
-              mat KSigma_iX1 = K1.t() * Sigma_iX;
-              KPK1 = (K1.t() * (Sigma_i.t() * K1)) - (KSigma_iX1 * (KSigma_iX1 * cov.t()).t());
-            }
+	   arma::mat KPK1;
+           if (!isNullP) {
+             KPK1 = K1.t() * (P.t() * K1);
+           } else {
+	     arma::mat KSigma_iX1 = K1.t() * Sigma_iX;
+             KPK1 = (K1.t() * (Sigma_i.t() * K1)) - (KSigma_iX1 * (KSigma_iX1 * cov.t()).t());
+           }
 
-            KPK1 = KPK1 % kron(ones(ei+qi+1, ei+qi+1), mat(ng, ng, fill::eye));
+           KPK1 = KPK1 % arma::kron(arma::ones(ei+qi+1, ei+qi+1), arma::mat(ng, ng, arma::fill::eye));
 
-            bool is_non_singular_K = inv(IV_V_i1,KPK1);
-            if (!is_non_singular_K) {
-              IV_V_i1=pinv(KPK1);
-            }
+           bool is_non_singular_K = arma::inv(IV_V_i1,KPK1);
+           if (!is_non_singular_K) {
+             IV_V_i1=arma::pinv(KPK1);
+           }
             //IV_V_i1=inv(KPK1);
-            mat cross_K_res = K1.t() *res;
-            mat IV_U_kron1 = kron(ones(ei+qi+1,1), mat(ng, ng, fill::eye)); 
-            IV_U1 = IV_U_kron1.each_col() % cross_K_res;
-            BETA_INT1 = (IV_V_i1 * IV_U1);
+	   arma::mat cross_K_res = K1.t() *res;
+	   arma::mat IV_U_kron1 = arma::kron(arma::ones(ei+qi+1,1), arma::mat(ng, ng, arma::fill::eye)); 
+           IV_U1 = IV_U_kron1.each_col() % cross_K_res;
+           BETA_INT1 = (IV_V_i1 * IV_U1);
 
-            bool is_non_singular_IV_V1 = inv(IV_E_i,IV_V_i1(span(ng,ngei1-1),span(ng,ngei1-1)));
-            if (!is_non_singular_IV_V1) {
-              IV_E_i=pinv(IV_V_i1(span(ng,ngei1-1),span(ng,ngei1-1))); 
-            }
+           bool is_non_singular_IV_V1 = arma::inv(IV_E_i,IV_V_i1(arma::span(ng,ngei1-1),arma::span(ng,ngei1-1)));
+           if (!is_non_singular_IV_V1) {
+             IV_E_i=arma::pinv(IV_V_i1(arma::span(ng,ngei1-1),arma::span(ng,ngei1-1))); 
+           }
             //IV_E_i=inv(IV_V_i1(span(ng,ngei1-1),span(ng,ngei1-1))); 
-            IV_U=IV_E_i*BETA_INT1.rows(ng,ngei1-1);
-            STAT_INT=diagvec(IV_U.t()*BETA_INT1.rows(ng,ngei1-1));
+           IV_U=IV_E_i*BETA_INT1.rows(ng,ngei1-1);
+           STAT_INT=arma::diagvec(IV_U.t()*BETA_INT1.rows(ng,ngei1-1));
 
             //bool is_non_singular_IV_V2 = inv(IV_GE_i,IV_V_i1(span(0,ngei1-1),span(0,ngei1-1)));
             //if (!is_non_singular_IV_V2) {
               try {
-                IV_GE_i=inv(IV_V_i1(span(0,ngei1-1),span(0,ngei1-1))); 
+                IV_GE_i=arma::inv(IV_V_i1(arma::span(0,ngei1-1),arma::span(0,ngei1-1))); 
                 //STAT_JOINT_tmp=solve(IV_V_i1(span(0,ngei1-1),span(0,ngei1-1)),BETA_INT1.rows(0,ngei1-1));
                 STAT_JOINT_tmp=IV_GE_i*BETA_INT1.rows(0,ngei1-1);
-                STAT_JOINT=diagvec(STAT_JOINT_tmp.t()*BETA_INT1.rows(0,ngei1-1));
+                STAT_JOINT=arma::diagvec(STAT_JOINT_tmp.t()*BETA_INT1.rows(0,ngei1-1));
             
 
                 for (size_t s = 0; s < STAT_INT.size(); s++) {
@@ -532,8 +531,8 @@ extern "C"
             }   
          }
     
-         uvec b_idx = regspace<uvec>(0, ng, (ei+qi-1) * ng);
-         uvec b_idx1 = regspace<uvec>(0, ng, (ei+qi) * ng);
+	 arma::uvec b_idx = arma::regspace<arma::uvec>(0, ng, (ei+qi-1) * ng);
+	 arma::uvec b_idx1 = arma::regspace<arma::uvec>(0, ng, (ei+qi) * ng);
          int ng_j = 0;
          for(size_t j=0; j<npbidx; ++j) {
            if(snp_skip[j] == 1) { // monomorphic, missrate, MAF
@@ -583,16 +582,16 @@ extern "C"
              else {
                //generate a squre matrix with elements 1 to E1.col*E1.col, for example E1.col=2, matrix [1,3;2,4] 
                //E1.col=3, matrix [1,4,7;2,5,8;3,6,9]
-               mat O(E.n_rows,1,fill::ones);
-               mat E1;
-               E1=join_horiz(O,E);
+	       arma::mat O(E.n_rows,1,arma::fill::ones);
+	       arma::mat E1;
+               E1=arma::join_horiz(O,E);
                int ncolE=E1.n_cols;
-               mat split_mat(ncolE,ncolE);
+	       arma::mat split_mat(ncolE,ncolE);
                for (int i=0; i<ncolE; i++) {
                  for (int j=0; j<ncolE; j++)
                  split_mat(i,j)=i+1-ncolE+ncolE*(j+1);
                 }
-                split_mat=split_mat(span(1,ei),span(1,ei));
+                split_mat=split_mat(arma::span(1,ei),arma::span(1,ei));
                 if ( split_mat.n_elem ==1){
                // Beta Int
                     for (int b=0; b < ei+1; b++) {
@@ -750,9 +749,9 @@ extern "C"
 	n = J.n_rows;
       }
  
-      vec g(n);
-      uvec gmiss(n), snp_skip = zeros<uvec>(npb);
-      mat G(n_obs, npb);
+      arma::vec g(n);
+      arma::uvec gmiss(n), snp_skip = arma::zeros<arma::uvec>(npb);
+      arma::mat G(n_obs, npb);
       string* tmpout = new string[npb];
       vector <string> biminfo;
       double gmean, mac, gsqmean, geno, gmax, gmin, rsq;
@@ -783,8 +782,8 @@ extern "C"
       fseek(fp, byte, SEEK_SET);
       
       int ret;
-      mat strata_AF(end,strataList_size);
-      mat strata_N(end,strataList_size);
+      arma::mat strata_AF(end,strataList_size);
+      arma::mat strata_N(end,strataList_size);
       for (uint m = begin; m < end; m++) {
         stringstream writeout;        
         uint Nprob; ret = fread(&Nprob, 4, 1, fp); 
@@ -879,13 +878,13 @@ extern "C"
                 writeout << snpID << "\t" << rsID << "\t" << chrStr << "\t" << physpos_tmp << "\t" << allele1 << "\t" << allele0 << "\t" << (n-nmiss) << "\t" << gmean/2.0 << "\t" << mac << "\t" << rsq << "\t";
                 std::vector<double> strata_range(strataList_size);
                 for (int strata_idx = 0; strata_idx < strataList_size; strata_idx++) {
-                      uvec strata_tmp = as<arma::uvec>(strata_list[strata_idx]);
-                      uvec strata_gmiss = gmiss.elem(strata_tmp-1);
-                      vec strata_g = g.elem(strata_tmp-1);
-                      strata_AF(m,strata_idx) = mean(strata_g.elem(find(strata_gmiss == 0))) / 2.0;
-                      vec tmp;
-                      tmp= strata_g.elem(find(strata_gmiss == 0));
-                      strata_N(m,strata_idx) =tmp.n_elem;            
+			arma::uvec strata_tmp = as<arma::uvec>(strata_list[strata_idx]);
+			arma::uvec strata_gmiss = gmiss.elem(strata_tmp-1);
+			arma::vec strata_g = g.elem(strata_tmp-1);
+                      	strata_AF(m,strata_idx) = mean(strata_g.elem(arma::find(strata_gmiss == 0))) / 2.0;
+			arma::vec tmp;
+                      	tmp= strata_g.elem(arma::find(strata_gmiss == 0));
+                      	strata_N(m,strata_idx) =tmp.n_elem;            
                   }
                 for (int strata_idx = 0; strata_idx < strataList_size; strata_idx++) {
                       writeout << strata_N(m,strata_idx) << "\t";
@@ -922,118 +921,118 @@ extern "C"
             G.reshape(n_obs, npbidx);
             snp_skip = snp_skip.rows(0,npbidx-1);
           }
-          uvec snp_idx = find(snp_skip == 0);
+	  arma::uvec snp_idx = arma::find(snp_skip == 0);
           G = G.cols(snp_idx);
           int ng = G.n_cols; 
                     
-          mat IV_U;
-          mat IV_U1;
-          mat IV_V_i;
-          mat IV_V_i1;
-          mat IV_E_i;
-          mat IV_GE_i;
-          mat STAT_JOINT_tmp;
-          vec BETA_MAIN;
-          vec STAT_INT;
-          vec STAT_JOINT;
-          vec SE_MAIN;
-          mat BETA_INT;
-          mat BETA_INT1;
-          vec PVAL_MAIN(ng);
+	  arma::mat IV_U;
+	  arma::mat IV_U1;
+	  arma::mat IV_V_i;
+	  arma::mat IV_V_i1;
+	  arma::mat IV_E_i;
+	  arma::mat IV_GE_i;
+	  arma::mat STAT_JOINT_tmp;
+	  arma::vec BETA_MAIN;
+	  arma::vec STAT_INT;
+	  arma::vec STAT_JOINT;
+	  arma::vec SE_MAIN;
+	  arma::mat BETA_INT;
+	  arma::mat BETA_INT1;
+	  arma::vec PVAL_MAIN(ng);
           PVAL_MAIN.fill(NA_REAL);
-          vec PVAL_INT(ng);
+	  arma::vec PVAL_INT(ng);
           PVAL_INT.fill(NA_REAL);
-          vec PVAL_JOINT(ng);
+	  arma::vec PVAL_JOINT(ng);
           PVAL_JOINT.fill(NA_REAL);
           size_t ngei1=ng*(ei+1);
   
           if (G.n_cols != 0) {
-            mat K;
-            for (int ei_idx = 0; ei_idx < ei+qi; ei_idx++) {
-              mat tmpK = G.each_col() % E.col(ei_idx);
-              K = join_horiz(K, tmpK);
-            } 
-            mat K1;
-            mat O(E.n_rows,1,fill::ones);
-            mat E1;
-            E1=join_horiz(O,E);
-            for (int ei_idx = 0; ei_idx < ei+qi+1; ei_idx++) {
-              mat tmpK1 = G.each_col() % E1.col(ei_idx);
-              K1 = join_horiz(K1, tmpK1);
-            }
+		arma::mat K;
+            	for (int ei_idx = 0; ei_idx < ei+qi; ei_idx++) {
+			arma::mat tmpK = G.each_col() % E.col(ei_idx);
+              		K = arma::join_horiz(K, tmpK);
+            	}	 
+		arma::mat K1;
+		arma::mat O(E.n_rows,1,arma::fill::ones);
+		arma::mat E1;
+            	E1=arma::join_horiz(O,E);
+            	for (int ei_idx = 0; ei_idx < ei+qi+1; ei_idx++) {
+			arma::mat tmpK1 = G.each_col() % E1.col(ei_idx);
+              		K1 = arma::join_horiz(K1, tmpK1);
+            	}
 
-            vec U = G.t() * res;            
-            sp_mat Gsp(G);
-            sp_mat PG;
-            if (!isNullP) {
-              PG = P.t() * G;
-            } else {
-              sp_mat GSigma_iX =  Gsp.t() * Sigma_iX;
-              PG = (Sigma_i.t() * Gsp) - (Sigma_iX * (GSigma_iX * cov.t()).t());
-            }
+		arma::vec U = G.t() * res;            
+		arma::sp_mat Gsp(G);
+		arma::sp_mat PG;
+            	if (!isNullP) {
+              		PG = P.t() * G;
+            	} else {
+			arma::sp_mat GSigma_iX =  Gsp.t() * Sigma_iX;
+              		PG = (Sigma_i.t() * Gsp) - (Sigma_iX * (GSigma_iX * cov.t()).t());
+            	}
             
-            mat GPG = (G.t() * PG)  % kron(ones(1, 1), mat(ng, ng, fill::eye));
-            mat GPG_i;
-            bool is_non_singular = inv(GPG_i, GPG);
-            if (!is_non_singular) {
-              GPG_i = pinv(GPG);
-            }
+		arma::mat GPG = (G.t() * PG)  % arma::kron(arma::ones(1, 1), arma::mat(ng, ng, arma::fill::eye));
+		arma::mat GPG_i;
+            	bool is_non_singular = arma::inv(GPG_i, GPG);
+            	if (!is_non_singular) {
+              		GPG_i = arma::pinv(GPG);
+            	}
             
-            mat V_i;
-            V_i = diagvec(GPG_i);    
-            vec V_MAIN_adj = diagvec(GPG_i);
-            V_MAIN_adj     = V_MAIN_adj.rows(0, ng-1);            
-            vec BETA_MAIN_adj = GPG_i.t() * U; 
-            BETA_MAIN_adj     = BETA_MAIN_adj.rows(0, ng-1);           
-            vec STAT_MAIN_adj(ng);
-            STAT_MAIN_adj.fill(NA_REAL);
-            for (size_t s = 0; s < V_MAIN_adj.size(); s++) {
-              if (V_MAIN_adj[s] > 0) {
-                STAT_MAIN_adj[s] = (BETA_MAIN_adj[s] * BETA_MAIN_adj[s]) / V_MAIN_adj[s];
-              }
-            } 
+		arma::mat V_i;
+            	V_i = arma::diagvec(GPG_i);    
+		arma::vec V_MAIN_adj = arma::diagvec(GPG_i);
+            	V_MAIN_adj     = V_MAIN_adj.rows(0, ng-1);            
+		arma::vec BETA_MAIN_adj = GPG_i.t() * U; 
+            	BETA_MAIN_adj     = BETA_MAIN_adj.rows(0, ng-1);           
+		arma::vec STAT_MAIN_adj(ng);
+            	STAT_MAIN_adj.fill(NA_REAL);
+            	for (size_t s = 0; s < V_MAIN_adj.size(); s++) {
+              		if (V_MAIN_adj[s] > 0) {
+                		STAT_MAIN_adj[s] = (BETA_MAIN_adj[s] * BETA_MAIN_adj[s]) / V_MAIN_adj[s];
+              		}
+            	}	 
             
-            BETA_MAIN = V_i % U.rows(0,ng-1);
-            SE_MAIN = sqrt(V_i);
-            vec STAT_MAIN = BETA_MAIN % U.rows(0,ng-1);
-            for (size_t s = 0; s < STAT_MAIN.size(); s++) {
-              if (STAT_MAIN[s] > 0) {
-                PVAL_MAIN[s] = Rf_pchisq(STAT_MAIN[s], 1, 0, 0);
-              }
-            }
+            	BETA_MAIN = V_i % U.rows(0,ng-1);
+            	SE_MAIN = sqrt(V_i);
+		arma::vec STAT_MAIN = BETA_MAIN % U.rows(0,ng-1);
+            	for (size_t s = 0; s < STAT_MAIN.size(); s++) {
+              		if (STAT_MAIN[s] > 0) {
+                		PVAL_MAIN[s] = Rf_pchisq(STAT_MAIN[s], 1, 0, 0);
+              		}
+            	}
             
-            mat KPK1;
-            if (!isNullP) {
-              KPK1 = K1.t() * (P.t() * K1);
-            } else {
-              mat KSigma_iX1 = K1.t() * Sigma_iX;
-              KPK1 = (K1.t() * (Sigma_i.t() * K1)) - (KSigma_iX1 * (KSigma_iX1 * cov.t()).t());
-            }
+		arma::mat KPK1;
+            	if (!isNullP) {
+              		KPK1 = K1.t() * (P.t() * K1);
+            	} else {
+			arma::mat KSigma_iX1 = K1.t() * Sigma_iX;
+              		KPK1 = (K1.t() * (Sigma_i.t() * K1)) - (KSigma_iX1 * (KSigma_iX1 * cov.t()).t());
+            	}
 
-            KPK1 = KPK1 % kron(ones(ei+qi+1, ei+qi+1), mat(ng, ng, fill::eye));
-            IV_V_i1=inv(KPK1);            
-            mat cross_K_res = K1.t() *res;
-            mat IV_U_kron1 = kron(ones(ei+qi+1,1), mat(ng, ng, fill::eye));
-            IV_U1 = IV_U_kron1.each_col() % cross_K_res;
-            BETA_INT1 = (IV_V_i1 * IV_U1);
-            IV_E_i=inv(IV_V_i1(span(ng,ngei1-1),span(ng,ngei1-1))); 
-            IV_U=IV_E_i*BETA_INT1.rows(ng,ngei1-1);
-            STAT_INT=diagvec(IV_U.t()*BETA_INT1.rows(ng,ngei1-1));
-            IV_GE_i=inv(IV_V_i1(span(0,ngei1-1),span(0,ngei1-1))); 
-            STAT_JOINT_tmp=IV_GE_i*BETA_INT1.rows(0,ngei1-1);
-            STAT_JOINT=diagvec(STAT_JOINT_tmp.t()*BETA_INT1.rows(0,ngei1-1));
+            	KPK1 = KPK1 % arma::kron(arma::ones(ei+qi+1, ei+qi+1), arma::mat(ng, ng, arma::fill::eye));
+            	IV_V_i1=arma::inv(KPK1);            
+		arma::mat cross_K_res = K1.t() *res;
+		arma::mat IV_U_kron1 = arma::kron(arma::ones(ei+qi+1,1), arma::mat(ng, ng, arma::fill::eye));
+            	IV_U1 = IV_U_kron1.each_col() % cross_K_res;
+            	BETA_INT1 = (IV_V_i1 * IV_U1);
+            	IV_E_i=arma::inv(IV_V_i1(arma::span(ng,ngei1-1),arma::span(ng,ngei1-1))); 
+            	IV_U=IV_E_i*BETA_INT1.rows(ng,ngei1-1);
+            	STAT_INT=arma::diagvec(IV_U.t()*BETA_INT1.rows(ng,ngei1-1));
+            	IV_GE_i=arma::inv(IV_V_i1(arma::span(0,ngei1-1),arma::span(0,ngei1-1))); 
+            	STAT_JOINT_tmp=IV_GE_i*BETA_INT1.rows(0,ngei1-1);
+            	STAT_JOINT=arma::diagvec(STAT_JOINT_tmp.t()*BETA_INT1.rows(0,ngei1-1));
 
-            for (size_t s = 0; s < STAT_INT.size(); s++) {
-                PVAL_INT[s] = Rf_pchisq(STAT_INT[s], ei, 0, 0);
+            	for (size_t s = 0; s < STAT_INT.size(); s++) {
+                	PVAL_INT[s] = Rf_pchisq(STAT_INT[s], ei, 0, 0);
                 //if (is_finite(PVAL_MAIN[s])) {
-                  PVAL_JOINT[s] = Rf_pchisq(STAT_JOINT[s], 1+ei, 0, 0);
+                  	PVAL_JOINT[s] = Rf_pchisq(STAT_JOINT[s], 1+ei, 0, 0);
                 //}
-              }
+              	}
               
-            } 
+          } 
           
-          uvec b_idx = regspace<uvec>(0, ng, (ei+qi-1) * ng);
-          uvec b_idx1 = regspace<uvec>(0, ng, (ei+qi) * ng);
+	  arma::uvec b_idx = arma::regspace<arma::uvec>(0, ng, (ei+qi-1) * ng);
+	  arma::uvec b_idx1 = arma::regspace<arma::uvec>(0, ng, (ei+qi) * ng);
           int ng_j = 0;
           for(size_t j=0; j<npbidx; ++j) {
             if(snp_skip[j] == 1) { // monomorphic, missrate, MAF
@@ -1083,74 +1082,74 @@ extern "C"
              else {
                //generate a squre matrix with elements 1 to E1.col*E1.col, for example E1.col=2, matrix [1,3;2,4] 
                //E1.col=3, matrix [1,4,7;2,5,8;3,6,9]
-               mat O(E.n_rows,1,fill::ones);
-               mat E1;
-               E1=join_horiz(O,E);
-               int ncolE=E1.n_cols;
-               mat split_mat(ncolE,ncolE);
-               for (int i=0; i<ncolE; i++) {
-                 for (int j=0; j<ncolE; j++)
-                 split_mat(i,j)=i+1-ncolE+ncolE*(j+1);
-                }
-                split_mat=split_mat(span(1,ei),span(1,ei));
-                if ( split_mat.n_elem ==1){
+		     arma::mat O(E.n_rows,1,arma::fill::ones);
+		     arma::mat E1;
+               	     E1=arma::join_horiz(O,E);
+               	     int ncolE=E1.n_cols;
+		     arma::mat split_mat(ncolE,ncolE);
+               	     for (int i=0; i<ncolE; i++) {
+                 	for (int j=0; j<ncolE; j++)
+                 		split_mat(i,j)=i+1-ncolE+ncolE*(j+1);
+                     }
+                     split_mat=split_mat(arma::span(1,ei),arma::span(1,ei));
+                     if ( split_mat.n_elem ==1){
                // Beta Int
-                 for (int b=0; b < ei+1; b++) {
-                   int row = b_idx1[b] + ng_j ;
+                 	for (int b=0; b < ei+1; b++) {
+                   		int row = b_idx1[b] + ng_j ;
                    //NOT the first ng row 
-                   if (row>ng-1) {
-                      writefile << BETA_INT1(row, ng_j ) << "\t";
-                    }
-                 }
+                   		if (row>ng-1) {
+                      			writefile << BETA_INT1(row, ng_j ) << "\t";
+                    		}
+                 	}
 
               // Var (the diaganol elements)                
-                 for (int b=0; b < ei+1; b++) {
-                     int col = b_idx1[b] + ng_j ;
-                     for (int d=0; d < ei+1; d++) {
-                       if(b == d ) {
-                       int row = b_idx1[d] + ng_j ; 
+                 	for (int b=0; b < ei+1; b++) {
+                     		int col = b_idx1[b] + ng_j ;
+                     		for (int d=0; d < ei+1; d++) {
+                       			if(b == d ) {
+                       				int row = b_idx1[d] + ng_j ; 
                        //NOT the first ng row or first ng col
-                       if (row > ng-1  && col >ng-1) {
-                        writefile << sqrt(IV_V_i1(row, col)) << "\t";
-                       }
-                     }
-                   }
-                }
-            }
-               else {
+                       				if (row > ng-1  && col >ng-1) {
+                        				writefile << sqrt(IV_V_i1(row, col)) << "\t";
+                       				}
+                     			}
+                   		}
+                	}
+             }
+             else {
                         // Beta Int
-                       for (int b=0; b < ei+1; b++) {
-                          int row = b_idx1[b] + ng_j ;
+             		for (int b=0; b < ei+1; b++) {
+                          	int row = b_idx1[b] + ng_j ;
                    //NOT the first ng row 
-                           if (row>ng-1) {
-                               writefile << BETA_INT1(row, ng_j ) << "\t";
-                            }
+                           	if (row>ng-1) {
+                               		writefile << BETA_INT1(row, ng_j ) << "\t";
+                            	}
                         }
                         for (int b=0; b < ei+1; b++) {
-                            int col = b_idx1[b] + ng_j ;
-                            for (int d=0; d < ei+1; d++) {
-                               if(b == d ) {
-                                  int row = b_idx1[d] + ng_j ; 
+                            	int col = b_idx1[b] + ng_j ;
+                            	for (int d=0; d < ei+1; d++) {
+                               		if(b == d ) {
+                                  		int row = b_idx1[d] + ng_j ; 
                        //NOT the first ng row or first ng col
-                                   if (row > ng-1  && col >ng-1) {
-                                     writefile << sqrt(IV_V_i1(row, col)) << "\t";
-                                    }
-                                }
-                            }
+                                   		if (row > ng-1  && col >ng-1) {
+                                     			writefile << sqrt(IV_V_i1(row, col)) << "\t";
+                                    		}
+                                	}
+                            	}
                         }
                         // Cov (the lower triangle )
-                         for (int b=0; b < ei+1; b++) {
+                        for (int b=0; b < ei+1; b++) {
                                int col = b_idx1[b] + ng_j ;
-                                for (int d=0; d < ei+1; d++) {
-                                   if(d > b) {
-                                      int row = b_idx1[d] + ng_j ;
-                                       if (row > ng-1  && col >ng-1) {
-                                         writefile << IV_V_i1(row, col) << "\t";
-                                       }
-                                    }
-                                }
-                           }
-                }
+                               for (int d=0; d < ei+1; d++) {
+                                   	if(d > b) {
+                                      		int row = b_idx1[d] + ng_j ;
+                                       		if (row > ng-1  && col >ng-1) {
+                                         		writefile << IV_V_i1(row, col) << "\t";
+                                       		}
+                                    	}
+                               }
+                        }
+             }
              }
               writefile << PVAL_MAIN[ng_j] << "\t"  << PVAL_INT[ng_j] << "\t" <<  PVAL_JOINT[ng_j] << "\n";
               ng_j++;

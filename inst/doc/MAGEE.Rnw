@@ -38,9 +38,9 @@ morekeywords={}
 
 \begin{document}
 \SweaveOpts{concordance=TRUE}
-\title{MAGEE: Mixed Model Association Test for GEne-Environment Interaction\\Version 1.4.4}
-\date{October 20, 2025}
-\author{Xinyu Wang\\Human Genetics Center\\Dept. of Biostatistics and Data Science\\School of Public Health\\The University of Texas Health Science Center at Houston\\Email: Xinyu.Wang@uth.tmc.edu\\\\Han Chen\\Human Genetics Center\\Department of Epidemiology\\School of Public Health\\The University of Texas Health Science Center at Houston\\Email: hanchenphd@gmail.com\\\\Duy Pham\\Human Genetics Center\\Department of Epidemiology\\School of Public Health\\The University of Texas Health Science Center at Houston\\Email: duy.t.pham@uth.tmc.edu\\\\Kenneth Westerman\\Department of Medicine\\Clinical and Translational Epidemiology Unit\\Mongan Institute\\Massachusetts General Hospital\\Email: KEWESTERMAN@mgh.harvard.edu\\\\Cong Pan\\Human Genetics Center\\Department of Epidemiology\\School of Public Health\\The University of Texas Health Science Center at Houston\\Email: cong.pan@uth.tmc.edu} 
+\title{MAGEE: Mixed Model Association Test for GEne-Environment Interaction\\Version 1.4.5}
+\date{February 11, 2026}
+\author{Xinyu Wang\\Human Genetics Center\\Dept. of Biostatistics and Data Science\\School of Public Health\\The University of Texas Health Science Center at Houston\\Email: Xinyu.Wang@uth.tmc.edu\\\\Han Chen\\Rory Meyers College of Nursing\\New York University\\Email: hanchenphd@gmail.com\\\\Duy Pham\\Human Genetics Center\\Department of Epidemiology\\School of Public Health\\The University of Texas Health Science Center at Houston\\Email: duy.t.pham@uth.tmc.edu\\\\Kenneth Westerman\\Department of Medicine\\Clinical and Translational Epidemiology Unit\\Mongan Institute\\Massachusetts General Hospital\\Email: KEWESTERMAN@mgh.harvard.edu\\\\Cong Pan\\Human Genetics Center\\Department of Epidemiology\\School of Public Health\\The University of Texas Health Science Center at Houston\\Email: cong.pan@uth.tmc.edu} 
 
 \maketitle
 \newpage
@@ -523,6 +523,11 @@ Initial public release of \textit{MAGEE}.
 \begin{enumerate}
 \item Fixed a minor bug in fitglmm.cpp due to deprecated "arma::is\_finite" in Armadillo 15.
 \item Fixed minor issues in the vignette (thanks to: Dan Gealow).
+\end{enumerate}
+
+\subsection{Version 1.4.5 (February 11, 2026)}
+\begin{enumerate}
+\item Fixed a minor bug in fitglmm.cpp to avoid conflicts between "arma::span" and "std::span" in C++20.
 \end{enumerate}
 
 \section{Contact}
