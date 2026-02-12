@@ -1,6 +1,6 @@
 Package: MAGEE
-Version: 1.4.4
-Date: 2025-10-20
+Version: 1.4.5
+Date: 2026-02-11
 Title: Mixed Model Association Test for GEne-Environment Interaction
 Authors@R: c(person("Xinyu", "Wang", role = "aut", email = "xinyu.wang@uth.tmc.edu"),
              person("Han", "Chen", role = c("aut", "cre"), email = "hanchenphd@gmail.com"),

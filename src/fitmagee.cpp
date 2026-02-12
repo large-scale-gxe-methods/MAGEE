@@ -1,5 +1,5 @@
 /*  MAGEE : An R Package for Mixed Model Association Test for GEne-Environment Interaction
- *  Copyright (C) 2020--2025  Xinyu Wang, Han Chen, Duy T. Pham
+ *  Copyright (C) 2020--2026  Xinyu Wang, Han Chen, Duy T. Pham
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
